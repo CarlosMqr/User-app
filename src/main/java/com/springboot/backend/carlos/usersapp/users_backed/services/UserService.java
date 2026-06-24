@@ -3,11 +3,12 @@ package com.springboot.backend.carlos.usersapp.users_backed.services;
 import com.springboot.backend.carlos.usersapp.users_backed.model.User;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface UsersService {
-    User findById(Long id);
-    User findByName(String name);
+public interface UserService {
+    Optional<User> findById(Long id);
+    Optional<User> findByName(String name);
     List<User> findAll();
     User save(User user);
-    void delete(Long id);
+    void deleteById(Long id);
 }
