@@ -5,7 +5,6 @@ import com.springboot.backend.carlos.usersapp.users_backed.services.UserServiceI
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +23,7 @@ public class UserController {
     @Autowired
     private UserServiceImpl userServiceImpl;
 
-     @GetMapping("/users")
+     @GetMapping
     public List<User> list(){
          return userServiceImpl.findAll();
      }
@@ -114,15 +113,43 @@ public class UserController {
              response.put("Error", e.getMostSpecificCause().getMessage());
              return new ResponseEntity(response, NOT_FOUND);
          }
+     }
 
 
+     @DeleteMapping("users/{id}")
+    public ResponseEntity<?> delete(@PathVariable Long id){
+     Map<String, Object> response =  new HashMap<>();
+      Optional<User> userOptional = userServiceImpl.findById(id);
+
+      if (userOptional.isEmpty()){
+          response.put("Mensaje", "Error:, no se puede editar, el cliente con ID: ".concat(id.toString().concat(" no existe en la BD")));
+          return new ResponseEntity(response,NOT_FOUND);
+      }
+
+      try {
+           User user = userOptional.get();
+           userServiceImpl.deleteById(user.getId());
+          response.put("Mensaje", "El estudiante se elimino con exito");
+          return  new ResponseEntity<>(response, OK);
+      }catch (DataAccessException e){
+          response.put("Mensaje", "Error al eliminar");
+          response.put("Error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
+          return new ResponseEntity<>(response, INTERNAL_SERVER_ERROR);
+      }
+     }
 
 
-
-
-
-         }
-
-
+     @GetMapping("/user/name/{userName}")
+    public ResponseEntity<?> findByUserName(@PathVariable String userName){
+         Map<String, Object> response =  new HashMap<>();
+         Optional<User> findUserName = userServiceImpl.findByUserName(userName);
+        if (findUserName.isEmpty()){
+            response.put("Mensaje", "Error: el UserName no encontrado");
+            return new ResponseEntity(response,NOT_FOUND);
+        }
+        response.put("Mensaje", "El UserName se encontro con exito");
+        response.put("UserName", findUserName.get());
+        return new ResponseEntity(response, OK);
+        }
 
 }
