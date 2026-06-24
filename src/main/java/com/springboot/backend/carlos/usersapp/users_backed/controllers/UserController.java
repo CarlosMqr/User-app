@@ -77,6 +77,52 @@ public class UserController {
          return new ResponseEntity(response,CREATED);
      }
 
+     @PutMapping("/users/{id}")
+    public ResponseEntity<User> update(@Valid @RequestBody User user, @PathVariable Long id, BindingResult result){
+         Map<String, Object> response = new HashMap<>();
+         Optional<User> userOptional = userServiceImpl.findById(id);
+         User userDb = userOptional.get();
+         User userUpdate;
+
+         if (result.hasErrors()){
+             List<String> errors = result.getFieldErrors()
+                     .stream()
+                     .map(err -> "El campo  " + err.getField() + "' " + err.getDefaultMessage() )
+                     .collect(Collectors.toList());
+
+             response.put("errors", errors);
+             return new ResponseEntity(response,BAD_REQUEST);
+     }
+
+         if (userOptional.isEmpty()){
+             response.put("Mensaje", "Error:, no se puede editar, el cliente con ID: ".concat(id.toString().concat(" no existe en la BD")));
+             return new ResponseEntity(response,NOT_FOUND);
+         }
+
+         try {
+             userDb.setName(user.getName());
+             userDb.setLastname(user.getLastname());
+             userDb.setEmail(user.getEmail());
+             userDb.setUsername(user.getUsername());
+             userDb.setPassword(user.getPassword());
+             userUpdate = userServiceImpl.save(userDb);
+             response.put("Mensaje", "El estudiante se actualizo con exito");
+             response.put("Estudiante", userUpdate);
+             return new ResponseEntity(response, OK);
+         }catch (DataAccessException e){
+             response.put("Mensaje", "Error al realizar el update");
+             response.put("Error", e.getMostSpecificCause().getMessage());
+             return new ResponseEntity(response, NOT_FOUND);
+         }
+
+
+
+
+
+
+
+         }
+
 
 
 }
